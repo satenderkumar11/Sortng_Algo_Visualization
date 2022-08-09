@@ -10,10 +10,31 @@ let numOfBars = Math.floor(
   612 / (2 + (100 - slider.value).toFixed(2) * (49 / 80))
 );
 let heightFactor = 2;
-let speedFactor = 1000;
+let speedFactor = 10;
 let unsorted_array = new Array(numOfBars);
 
+function saveInfo(){
+  let slid = slider.value;
+  let algo = sort_algo.value;
+  let s = speed.value;
+
+  let itemJsonArray = [];
+  itemJsonArray.push(slid);
+  itemJsonArray.push(algo);
+  itemJsonArray.push(s);
+
+  localStorage.setItem("itemsJson", JSON.stringify(itemJsonArray));
+
+}
+document.getElementById("reset").addEventListener("click", function () {
+  saveInfo();
+  window.location.reload();
+});
+
 slider.addEventListener("input", function () {
+  
+
+
   numOfBars = Math.floor(
     612 / (2 + (100 - slider.value).toFixed(2) * (49 / 80))
   );
@@ -58,14 +79,36 @@ function renderBars(array) {
   }
 }
 
+function update() {
+  if (localStorage.getItem("itemsJson") == null) {
+    return;
+  }
+  itemJsonArrayStr = localStorage.getItem("itemsJson");
+  itemJsonArray = JSON.parse(itemJsonArrayStr);
+  localStorage.clear();
+  console.log(itemJsonArray[2]);
+
+  slider.value = itemJsonArray[0];
+  sort_algo.value = itemJsonArray[1];
+  speed.value = itemJsonArray[2];
+
+  speedFactor = speed.value;
+  numOfBars = Math.floor(
+    612 / (2 + (100 - slider.value).toFixed(2) * (49 / 80))
+  );
+  console.log(slider.value);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
-  console.log(1);
+  // console.log(1);
+  update();
 
   unsorted_array = createRandomArray();
-  console.log(2);
+  // console.log(2);
 
   renderBars(unsorted_array);
-  console.log(3);
+
+  // console.log(3);
 });
 
 function sleep(ms) {
@@ -78,7 +121,7 @@ async function bubbleSort(array) {
     for (let j = 0; j < array.length - 1 - i; j++) {
       if (j > 0) bar[j - 1].style.backgroundColor = "aqua";
 
-      bar[j].style.backgroundColor = "green";
+      bar[j].style.backgroundColor = "yellow";
       bar[j + 1].style.backgroundColor = "red";
       if (array[j] > array[j + 1]) {
         let temp = array[j];
@@ -89,8 +132,8 @@ async function bubbleSort(array) {
 
         bar[j].style.height = array[j] * heightFactor + "px";
         bar[j + 1].style.height = array[j + 1] * heightFactor + "px";
-        bar[j + 1].style.backgroundColor = "yellow";
-        bar[j].style.backgroundColor = "yellow";
+        // bar[j + 1].style.backgroundColor = "yellow";
+        // bar[j].style.backgroundColor = "yellow";
       }
       if (j == array.length - i - 2) {
         bar[j].style.backgroundColor = "aqua";
@@ -142,7 +185,7 @@ async function selectionSort(arr) {
 
   for (let i = 0; i < arr.length; i++) {
     let mi = i;
-    bar[mi].style.backgroundColor = "yellow";
+    bar[i].style.backgroundColor = "yellow";
 
     // bar[mi].style.backgroundColor = "red";
 
@@ -152,27 +195,30 @@ async function selectionSort(arr) {
       bar[j].style.backgroundColor = "green";
 
       if (arr[j] < arr[mi]) {
-        bar[mi].style.backgroundColor = "aqua";
-
         mi = j;
         bar[mi].style.backgroundColor = "red";
       }
 
-      // for (let k = 0; k < bar.length; k++) {
-      //   if (k != j && k != mi) {
-      //     bar[k].style.backgroundColor = "aqua";
-      //   }
+      for (let k = 0; k < bar.length; k++) {
+        if (k != j && k != mi && k != i) {
+          bar[k].style.backgroundColor = "aqua";
+        }
+      }
+      await sleep(speedFactor);
     }
-    await sleep(speedFactor);
 
     let temp = arr[i];
     arr[i] = arr[mi];
     arr[mi] = temp;
     bar[i].style.height = arr[i] * heightFactor + "px";
     bar[mi].style.height = arr[mi] * heightFactor + "px";
-    // bar[i].style.backgroundColor = "red";
+    bar[i].style.backgroundColor = "red";
     // bar[mi].style.backgroundColor = "yellow";
-    bar[mi].style.backgroundColor = "aqua";
+    await sleep(speedFactor);
+    await sleep(speedFactor);
+    for (let k = 0; k < bar.length; k++) {
+      bar[k].style.backgroundColor = "aqua";
+    }
   }
 }
 
@@ -187,30 +233,54 @@ function swap(arr, i, j) {
   bar[j].style.height = arr[j] * heightFactor + "px";
 }
 
-function partition(arr, s, e) {
+async function partition(arr, s, e) {
+  let bar = document.getElementsByClassName("bar");
+
+  bar[e].style.backgroundColor = "red";
   let pivot = arr[e];
   let si = s;
   for (let j = s; j < e; j++) {
+    bar[j].style.backgroundColor = "green";
+
     if (arr[j] < pivot) {
       swap(arr, j, si);
+      await sleep(speedFactor);
+      bar[j].style.backgroundColor = "aqua";
+      // bar[si].style.backgroundColor = "yellow";
+
       si++;
+    } else {
+      await sleep(speedFactor);
+      bar[j].style.backgroundColor = "aqua";
     }
+
+    // for (k = si; k < e; k++) {
+    //   bar[k].style.backgroundColor = "aqua";
+    // }
   }
   swap(arr, si, e);
+  bar[e].style.backgroundColor = "aqua";
+
+  bar[si].style.backgroundColor = "red";
+  await sleep(speedFactor);
+
+  for (k = s; k <= e; k++) {
+    bar[k].style.backgroundColor = "aqua";
+  }
+
   return si;
 }
 
 async function quickSort(arr, s, e) {
-  let bar = document.getElementsByClassName("bar");
   if (s < e) {
-    let pi = partition(arr, s, e);
+    let pi = await partition(arr, s, e);
 
-    quickSort(arr, s, pi - 1);
-    quickSort(arr, pi + 1, e);
+    await quickSort(arr, s, pi - 1);
+    await quickSort(arr, pi + 1, e);
   }
 }
 
-function merge(arr, s, e, mid) {
+async function merge(arr, s, e, mid) {
   console.log("merge");
   let bar = document.getElementsByClassName("bar");
 
@@ -236,9 +306,13 @@ function merge(arr, s, e, mid) {
   let k = 0;
   let j = 0;
   while (j < left.length && k < right.length) {
+    bar[i].style.backgroundColor = "yellow";
+
     if (left[j] < right[k]) {
       arr[i] = left[j];
       bar[i].style.height = arr[i] * heightFactor + "px";
+      // bar[i].style.backgroundColor = "yellow";
+
       // console.log("while");
 
       j++;
@@ -250,33 +324,45 @@ function merge(arr, s, e, mid) {
       i++;
       k++;
     }
+
+    await sleep(speedFactor);
   }
 
   while (j < left.length) {
+    bar[i].style.backgroundColor = "yellow";
+
     arr[i] = left[j];
     bar[i].style.height = arr[i] * heightFactor + "px";
 
     j++;
     i++;
+    await sleep(speedFactor);
   }
   while (k < right.length) {
+    bar[i].style.backgroundColor = "yellow";
+
     arr[i] = right[k];
     bar[i].style.height = arr[i] * heightFactor + "px";
 
     k++;
     i++;
+    await sleep(speedFactor);
+  }
+
+  for (let k = 0; k < bar.length; k++) {
+    bar[k].style.backgroundColor = "aqua";
   }
 }
 
-function mergeSort(arr, s, e) {
+async function mergeSort(arr, s, e) {
   if (s < e) {
     // console.log(s + " ");
     let mid = s + parseInt((e - s) / 2);
     // let mid = parseInt((s + e) / 2);
-    mergeSort(arr, s, mid);
-    mergeSort(arr, mid + 1, e);
+    await mergeSort(arr, s, mid);
+    await mergeSort(arr, mid + 1, e);
 
-    merge(arr, s, e, mid);
+    await merge(arr, s, e, mid);
   }
 }
 
