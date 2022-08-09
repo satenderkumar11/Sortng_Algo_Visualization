@@ -20,6 +20,7 @@
 .bars_container{
     display: flex;
     flex-direction: row;
+
 }
 
 .bar{
@@ -39,6 +40,7 @@ body{
 select, button{
     width: 200px;
     height: 30px;
+    /* margin-bottom: 100px; */
     background-color: #677685;
     border: none;
     border-radius: 5px;
